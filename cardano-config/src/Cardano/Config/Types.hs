@@ -55,11 +55,11 @@ import           Network.Socket (PortNumber)
 import           System.FilePath ((</>), takeDirectory)
 import           System.Posix.Types (Fd(Fd))
 
-import           Cardano.BM.Tracing (ToObject) --, Transformable)
+import           Cardano.BM.Tracing (ToObject, Transformable)
 import qualified Cardano.Chain.Update as Update
 import           Cardano.Chain.Slotting (EpochSlots)
 import           Cardano.Crypto.ProtocolMagic (RequiresNetworkMagic)
-import           Ouroboros.Consensus.Block (Header, BlockProtocol) -- ForgeState,
+import           Ouroboros.Consensus.Block (Header, BlockProtocol, ForgeState)
 import           Ouroboros.Consensus.Byron.Ledger.Block (ByronBlock)
 import           Ouroboros.Consensus.Byron.Ledger (byronLedgerState)
 import qualified Ouroboros.Consensus.Cardano as Consensus (Protocol, ProtocolClient)
@@ -384,6 +384,7 @@ type SomeConsensusProtocolConstraints blk =
      ( HasTxMaxSize (ExtLedgerState blk)
      , RunNode blk
      , TraceConstraints blk
+     , Transformable Text IO (ForgeState blk)
      )
 
 data SomeConsensusProtocol where

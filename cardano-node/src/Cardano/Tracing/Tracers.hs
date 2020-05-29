@@ -249,7 +249,7 @@ mkTracers
      , ShowQuery (Query blk)
      , Show peer, Eq peer
      , Show localPeer
-
+     , Transformable Text IO (ForgeState blk)
      )
   => TraceConfig
   -> Trace IO Text

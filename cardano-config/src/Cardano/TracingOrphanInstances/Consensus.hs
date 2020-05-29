@@ -157,6 +157,10 @@ instance HasPrivacyAnnotation (TPraosForgeState c)
 instance HasSeverityAnnotation (TPraosForgeState c) where
   getSeverityAnnotation TPraosForgeState {} = Info
 
+instance HasPrivacyAnnotation ()
+instance HasSeverityAnnotation () where -- TODO: LEFT OFF HERE, NEED TO CONTINUE WRITING Transformable instances for all the different forgestates
+  getSeverityAnnotation () = Info
+
 instance HasPrivacyAnnotation (TraceForgeEvent blk tx)
 instance HasSeverityAnnotation (TraceForgeEvent blk tx) where
   getSeverityAnnotation TraceForgedBlock {}            = Info
@@ -286,6 +290,9 @@ instance ( Condense (HeaderHash blk)
          , ToObject (Header blk))
       => Transformable Text IO (ChainDB.TraceEvent blk) where
   trTransformer = trStructuredText
+
+
+
 
 
 instance (Condense (HeaderHash blk), LedgerSupportsProtocol blk)
@@ -755,6 +762,13 @@ instance ToObject MempoolSize where
       [ "numTxs" .= msNumTxs
       , "bytes" .= msNumBytes
       ]
+
+instance HasTextFormatter () where
+  formatText _ = pack . show . toList
+
+-- ForgeState default value = ()
+instance Transformable Text IO () where
+  trTransformer = trStructuredText
 
 instance ToObject (TPraosForgeState c) where
   toObject _verb (TPraosForgeState (HotKey period _signKey)) =
