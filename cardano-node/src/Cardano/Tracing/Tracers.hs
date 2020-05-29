@@ -44,15 +44,16 @@ import           Cardano.BM.Trace (traceNamedObject, appendName)
 import           Cardano.BM.Data.Tracer (WithSeverity (..), annotateSeverity)
 import           Cardano.BM.Data.Transformers
 
-import           Ouroboros.Consensus.Block (Header, realPointSlot)
+import           Ouroboros.Consensus.Block (ForgeState, Header, realPointSlot)
 import           Ouroboros.Consensus.BlockchainTime (SystemStart (..), TraceBlockchainTimeEvent (..))
 import           Ouroboros.Consensus.Ledger.Abstract
 import           Ouroboros.Consensus.Ledger.SupportsProtocol (LedgerSupportsProtocol)
 import           Ouroboros.Consensus.Mempool.API
-                   (GenTx, MempoolSize (..), TraceEventMempool (..))
+                   (MempoolSize (..), TraceEventMempool (..))
 import qualified Ouroboros.Consensus.Node.Tracers as Consensus
 import qualified Ouroboros.Consensus.Network.NodeToClient as NodeToClient
 import qualified Ouroboros.Consensus.Network.NodeToNode as NodeToNode
+import           Ouroboros.Consensus.Shelley.Ledger.Mempool (GenTx)
 import           Ouroboros.Consensus.Util.Orphans ()
 
 import qualified Ouroboros.Network.AnchoredFragment as AF
@@ -248,6 +249,7 @@ mkTracers
      , ShowQuery (Query blk)
      , Show peer, Eq peer
      , Show localPeer
+
      )
   => TraceConfig
   -> Trace IO Text
@@ -610,6 +612,10 @@ mkTracers traceConf tracer bcCounters = do
       , Consensus.mempoolTracer
         = tracerOnOff traceConf traceMempool
           $ mempoolTracer traceConf
+      , Consensus.forgeStateTracer
+        = tracerOnOff traceConf traceForgeState
+          $ toLogObject' tracingVerbosity
+          $ appendName "ForgeState" tracer
       , Consensus.forgeTracer
         = Tracer $ \ev -> do
             traceWith (forgeTracer forgeTracers traceConf) ev

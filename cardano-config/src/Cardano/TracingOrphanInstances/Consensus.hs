@@ -18,6 +18,8 @@ import           Prelude (show)
 import qualified Data.Text as Text
 import           Data.Text (pack)
 
+import           Cardano.Config.Orphanage ()
+--import qualified Cardano.Crypto.KES as KES
 import           Cardano.TracingOrphanInstances.Common
 import           Cardano.TracingOrphanInstances.Network (showTip, showPoint)
 
@@ -37,13 +39,18 @@ import           Ouroboros.Consensus.Ledger.Abstract
 import qualified Ouroboros.Consensus.Protocol.BFT  as BFT
 import qualified Ouroboros.Consensus.Protocol.PBFT as PBFT
 import           Ouroboros.Consensus.Ledger.Extended
-import           Ouroboros.Consensus.Mempool.API
-                   (GenTx, GenTxId, HasTxId, TraceEventMempool (..), ApplyTxErr,
-                   MempoolSize(..), TxId, txId)
-import           Ouroboros.Consensus.Node.Tracers (TraceForgeEvent (..))
-import           Ouroboros.Consensus.Protocol.Abstract
+import           Ouroboros.Consensus.Ledger.SupportsMempool (ApplyTxErr, GenTxId,
+                   HasTxId, txId)
+import           Ouroboros.Consensus.Mempool.API (TraceEventMempool (..), MempoolSize(..))
 import           Ouroboros.Consensus.MiniProtocol.LocalTxSubmission.Server
                    (TraceLocalTxSubmissionServerEvent (..))
+import           Ouroboros.Consensus.Node.Tracers (TraceForgeEvent (..))
+import           Ouroboros.Consensus.Protocol.Abstract
+
+import           Ouroboros.Consensus.Shelley.Ledger (TPraosForgeState(..))
+import           Ouroboros.Consensus.Shelley.Ledger.Mempool (GenTx, TxId)
+import           Ouroboros.Consensus.Shelley.Protocol.Crypto (HotKey(..))
+
 import           Ouroboros.Consensus.Util.Condense
 import           Ouroboros.Consensus.Util.Orphans ()
 
@@ -146,6 +153,9 @@ instance HasPrivacyAnnotation (TraceEventMempool blk)
 instance HasSeverityAnnotation (TraceEventMempool blk) where
   getSeverityAnnotation _ = Info
 
+instance HasPrivacyAnnotation (TPraosForgeState c)
+instance HasSeverityAnnotation (TPraosForgeState c) where
+  getSeverityAnnotation TPraosForgeState {} = Info
 
 instance HasPrivacyAnnotation (TraceForgeEvent blk tx)
 instance HasSeverityAnnotation (TraceForgeEvent blk tx) where
@@ -225,11 +235,16 @@ instance ( Condense (HeaderHash blk)
       => Transformable Text IO (TraceForgeEvent blk tx) where
   trTransformer = trStructuredText
 
+instance HasTextFormatter (TPraosForgeState c) where
+  formatText _ = pack . show . toList
+
+instance Transformable Text IO (TPraosForgeState c) where
+    trTransformer = trStructuredText
 
 instance ( Condense (HeaderHash blk)
          , HasTxId tx
          , LedgerSupportsProtocol blk
-         , Show (TxId tx) )
+         , Show (TxId tx))
       => HasTextFormatter (TraceForgeEvent blk tx) where
   formatText = \case
     TraceAdoptedBlock slotNo blk txs -> const $
@@ -739,6 +754,14 @@ instance ToObject MempoolSize where
     mkObject
       [ "numTxs" .= msNumTxs
       , "bytes" .= msNumBytes
+      ]
+
+instance ToObject (TPraosForgeState c) where
+  toObject _verb (TPraosForgeState (HotKey period _signKey)) =
+    mkObject
+      [ "kind" .= String "TPraosForgeState"
+      , "hotKESVerificationKey" .= String "Need show instance for KES" -- (showT $ KES.deriveVerKeyKES signKey)
+      , "hotKESKeyPeriod" .= String (showT period)
       ]
 
 instance ( Condense (HeaderHash blk)

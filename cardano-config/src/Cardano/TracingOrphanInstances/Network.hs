@@ -49,8 +49,9 @@ import           Ouroboros.Network.TxSubmission.Outbound
 -- We do need some consensus imports to provide useful trace messages for some
 -- network protocols
 import           Ouroboros.Consensus.Util.Condense (Condense, condense)
-import           Ouroboros.Consensus.Mempool.API
-                   (GenTx, HasTxId, HasTxs(..), TxId, txId)
+import           Ouroboros.Consensus.Ledger.SupportsMempool (HasTxId, HasTxs(..),
+                   txId)
+import           Ouroboros.Consensus.Shelley.Ledger.Mempool (GenTx, TxId)
 
 
 showTip :: Condense (HeaderHash blk)

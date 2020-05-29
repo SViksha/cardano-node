@@ -151,6 +151,7 @@ executable chairman
                      , optparse-applicative
                      , ouroboros-consensus
                      , ouroboros-consensus-cardano
+                     , ouroboros-consensus-shelley
                      , ouroboros-network
                      , text
                      , transformers-except

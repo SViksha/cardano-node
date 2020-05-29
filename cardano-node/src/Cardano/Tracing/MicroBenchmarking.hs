@@ -37,10 +37,12 @@ import           Control.Tracer.Transformers.ObserveOutcome
 
 import           Ouroboros.Network.Block (SlotNo (..))
 
+import           Ouroboros.Consensus.Ledger.SupportsMempool (GenTxId,
+                   HasTxId, txId)
 import           Ouroboros.Consensus.Mempool.API
-                   (ApplyTx (..), GenTx, GenTxId, HasTxId (..),
-                    MempoolSize (..), TraceEventMempool (..), txId)
+                   (MempoolSize (..), TraceEventMempool (..))
 import           Ouroboros.Consensus.Node.Tracers (TraceForgeEvent (..))
+import           Ouroboros.Consensus.Shelley.Ledger.Mempool (GenTx)
 
 --------------------------------------------------------------------------------
 -- Measure transaction forging time
@@ -117,7 +119,7 @@ measureTxsEnd tracer = measureTxsEndInter $ toLogObject tracer
 -- Any Monad m, could be Identity in this case where we have all the data beforehand.
 -- The result of this operation is the list of transactions that _made it in the block_
 -- and the time it took them to get into the block.
-instance (Monad m, ApplyTx blk, HasTxId (GenTx blk)) => Outcome m (MeasureTxs blk) where
+instance (Monad m, HasTxId (GenTx blk)) => Outcome m (MeasureTxs blk) where
     type IntermediateValue  (MeasureTxs blk)    = [(GenTx blk, Time)]
     type OutcomeMetric      (MeasureTxs blk)    = [(GenTxId blk, DiffTime)]
 
@@ -237,4 +239,3 @@ instance ToObject
         , "mempoolbytes" .= toJSON (msNumBytes mpsize)
         ]
   toObject _verb (Right _) = emptyObject
-

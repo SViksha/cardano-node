@@ -29,7 +29,8 @@ import           Ouroboros.Network.Block
                    (SlotNo(..), blockHash, blockSlot, blockNo, blockPrevHash)
 import           Ouroboros.Network.Point (WithOrigin, withOriginToMaybe)
 import           Ouroboros.Consensus.Block (Header)
-import           Ouroboros.Consensus.Mempool.API (GenTx, TxId, txId)
+import           Ouroboros.Consensus.Ledger.SupportsMempool (txId)
+import           Ouroboros.Consensus.Shelley.Ledger.Mempool (GenTx, TxId)
 import           Ouroboros.Consensus.Util.Condense (condense)
 
 import           Ouroboros.Consensus.Shelley.Ledger
